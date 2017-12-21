@@ -22,25 +22,6 @@ os:
 jobs:
   fast_finish: true
   include:
-    # macOS is first to account for the delay in starting the build on macOS. This prevents the build from hanging on
-    # macOS as the last job to finish in a stage.
-    - stage: Test - PyInstaller
-      os: osx
-      language: generic
-      python: 3.6
-      cache:
-        directories:
-          - $HOME/Library/Caches/pip
-      install:
-        # Update pip.
-        - python -m pip install -U pip setuptools wheel | cat
-
-        # Install dependencies for PyInstaller tests.
-        - pip install -U -r tests/requirements-tools.txt | cat
-
-        # Install PyInstaller.
-        - pip install -e . | cat
-      script: py.test -n 3 --maxfail 3 tests/unit tests/functional --ignore=tests/functional/test_libraries.py --ignore=tests/functional/test_hooks
     - stage: Test - Libraries
       os: osx
       language: generic
