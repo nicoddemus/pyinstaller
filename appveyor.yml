@@ -8,7 +8,7 @@ branches:
     - /pyup\/.*/
 
 environment:
-  PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
+  PYTEST: py.test -k PyQt5
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
 
   matrix:
