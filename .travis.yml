@@ -50,28 +50,12 @@ jobs:
           - $HOME/Library/Caches/pip
       script: py.test -k PyQt5 tests/functional/test_libraries.py tests/functional/test_hooks
 
-    - &test-pyinstaller
-      stage: Test - PyInstaller
-      python: 3.5
-      install:
-        # Update pip.
-        - python -m pip install -U pip setuptools wheel | cat
-
-        # Install dependencies for PyInstaller tests.
-        - pip install -U -r tests/requirements-tools.txt | cat
-
-        # Install PyInstaller.
-        - pip install -e . | cat
-      # Run tests and speed them up by sending them to multiple CPUs.
-      script: py.test -n 3 --maxfail 3 tests/unit tests/functional --ignore=tests/functional/test_libraries.py --ignore=tests/functional/test_hooks
     - &test-libraries
       stage: Test - Libraries
       python: 3.5
       # Run tests and speed them up by sending them to multiple CPUs.
       script: py.test -n 3 --maxfail 3 tests/functional/test_libraries.py tests/functional/test_hooks
 
-    - <<: *test-pyinstaller
-      python: 3.6
     - <<: *test-libraries
       python: 3.6
 
