@@ -86,7 +86,9 @@ test_script:
   # if we're just updating the cache.
   - 'if not "%APPVEYOR_SCHEDULED_BUILD%" == "True" (
           %PYTEST%
-          py.test tests/unit
+    )'
+  - 'if not "%APPVEYOR_SCHEDULED_BUILD%" == "True" (
+          py.test tests/unit --junitxml=junit-results.xml
     )'
 
 on_finish:
