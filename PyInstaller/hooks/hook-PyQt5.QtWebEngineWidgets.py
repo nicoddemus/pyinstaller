@@ -8,7 +8,7 @@
 #-----------------------------------------------------------------------------
 
 import os
-from PyInstaller.utils.hooks import collect_data_files, get_qmake_path
+from PyInstaller.utils.hooks import collect_data_files, get_qmake_path, qt_plugins_binaries
 import PyInstaller.compat as compat
 
 hiddenimports = ["sip",
@@ -23,7 +23,16 @@ hiddenimports = ["sip",
 datas = (collect_data_files('PyQt5', True, os.path.join('Qt', 'resources')) +
          collect_data_files('PyQt5', True, os.path.join('Qt', 'translations')) +
          [x for x in collect_data_files('PyQt5', False, os.path.join('Qt'))
-          if 'QtWebEngineProcess' in x[0]])
+          if 'QtWebEngineProcess' in os.path.basename(x[0]) or 'qt.conf' in os.path.basename(x[0])])
+
+if compat.is_linux:
+    binaries = (
+        # Include required QT plugins for QtWebEngine.
+        qt_plugins_binaries('xcbglintegrations', namespace='PyQt5') +
+        # The automatic library detection fails for `NSS <https://packages.ubuntu.com/search?keywords=libnss3>`_, which is used by QtWebEngine. Pull in the missing files.
+        # TODO: how to locate this? The ``locate`` command finds non-system locations (``/usr/lib/firefix/libnss3.so``, for example) in addition to the path below.
+        [('/usr/lib/x86_64-linux-gnu/nss/*.so', '.')]
+    )
 
 # Note that for QtWebEngineProcess to be able to find icudtl.dat the bundle_identifier
 # must be set to 'org.qt-project.Qt.QtWebEngineCore'. This can be done by passing
@@ -50,4 +59,3 @@ if qmake:
                            'Helpers', 'QtWebEngineProcess.app', 'Contents', 'Info.plist'),
                      os.path.join('QtWebEngineProcess.app', 'Contents'))
         ]
-
