@@ -8,7 +8,7 @@ branches:
     - /pyup\/.*/
 
 environment:
-  PYTEST: py.test -k PyQt5
+  PYTEST: py.test -n3 --maxfail 5 --durations=10 --junitxml=junit-results.xml
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
 
   matrix:
@@ -22,6 +22,18 @@ environment:
 
     - PYTHON: C:\Python35
       PYTHON_VERSION: 3.5
+      PYTHON_ARCH: 32
+
+    - PYTHON: C:\Python34
+      PYTHON_VERSION: 3.4
+      PYTHON_ARCH: 32
+
+    - PYTHON: C:\Python33
+      PYTHON_VERSION: 3.3
+      PYTHON_ARCH: 32
+
+    - PYTHON: C:\Python27
+      PYTHON_VERSION: 2.7
       PYTHON_ARCH: 32
 
 init:
@@ -86,9 +98,6 @@ test_script:
   # if we're just updating the cache.
   - 'if not "%APPVEYOR_SCHEDULED_BUILD%" == "True" (
           %PYTEST%
-    )'
-  - 'if not "%APPVEYOR_SCHEDULED_BUILD%" == "True" (
-          py.test tests/unit --junitxml=junit-results.xml
     )'
 
 on_finish:

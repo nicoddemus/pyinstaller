@@ -22,6 +22,25 @@ os:
 jobs:
   fast_finish: true
   include:
+    # macOS is first to account for the delay in starting the build on macOS. This prevents the build from hanging on
+    # macOS as the last job to finish in a stage.
+    - stage: Test - PyInstaller
+      os: osx
+      language: generic
+      python: 3.6
+      cache:
+        directories:
+          - $HOME/Library/Caches/pip
+      install:
+        # Update pip.
+        - python -m pip install -U pip setuptools wheel | cat
+
+        # Install dependencies for PyInstaller tests.
+        - pip install -U -r tests/requirements-tools.txt | cat
+
+        # Install PyInstaller.
+        - pip install -e . | cat
+      script: py.test -n 3 --maxfail 3 tests/unit tests/functional --ignore=tests/functional/test_libraries.py --ignore=tests/functional/test_hooks
     - stage: Test - Libraries
       os: osx
       language: generic
@@ -29,16 +48,76 @@ jobs:
       cache:
         directories:
           - $HOME/Library/Caches/pip
-      script: py.test -k PyQt5 tests/functional/test_libraries.py
+      script: py.test -n 3 --maxfail 3 tests/functional/test_libraries.py tests/functional/test_hooks
 
+    - &test-pyinstaller
+      stage: Test - PyInstaller
+      python: 2.7
+      install:
+        # Update pip.
+        - python -m pip install -U pip setuptools wheel | cat
+
+        # Install dependencies for PyInstaller tests.
+        - pip install -U -r tests/requirements-tools.txt | cat
+
+        # Install PyInstaller.
+        - pip install -e . | cat
+      # Run tests and speed them up by sending them to multiple CPUs.
+      script: py.test -n 3 --maxfail 3 tests/unit tests/functional --ignore=tests/functional/test_libraries.py --ignore=tests/functional/test_hooks
     - &test-libraries
       stage: Test - Libraries
-      python: 3.5
+      python: 2.7
       # Run tests and speed them up by sending them to multiple CPUs.
-      script: py.test -k PyQt5 tests/functional/test_libraries.py
+      script: py.test -n 3 --maxfail 3 tests/functional/test_libraries.py tests/functional/test_hooks
+    - &lint
+      stage: Lint
+      python: 2.7
+      install:
+        # Update pip.
+        - python -m pip install -U pip setuptools wheel | cat
 
+        # Install dependencies for PyInstaller tests.
+        - pip install -U -r tests/requirements-tools.txt | cat
+
+        # Install PyInstaller.
+        - pip install -e . | cat
+      script:
+        - >
+            if [ "$TRAVIS_PULL_REQUEST" != "false" ] ; then
+                git fetch origin $TRAVIS_BRANCH:$TRAVIS_BRANCH --depth 1;
+                flake8-diff -v -v -v $TRAVIS_BRANCH;
+            fi
+
+    - <<: *test-pyinstaller
+      python: 3.3
+    - <<: *test-libraries
+      python: 3.3
+
+    - <<: *test-pyinstaller
+      python: 3.4
+    - <<: *test-libraries
+      python: 3.4
+
+    - <<: *test-pyinstaller
+      python: 3.5
+    - <<: *test-libraries
+      python: 3.5
+
+    - <<: *test-pyinstaller
+      python: 3.6
     - <<: *test-libraries
       python: 3.6
+    - <<: *lint
+      python: 3.6
+
+    - <<: *test-pyinstaller
+      python: nightly
+    - <<: *test-libraries
+      python: nightly
+
+  allow_failures:
+      # Just tests how PyInstaller performs with upcoming Python 3.6
+      - python: "nightly"
 
 addons:
   # Python packages should be installed by "pip" via the "test/requirements-library.txt" specification.
