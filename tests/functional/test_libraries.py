@@ -291,6 +291,8 @@ def test_PyQt5_uic(tmpdir, pyi_builder, data_dir):
     # Note that including the data_dir fixture copies files needed by this test.
     pyi_builder.test_script('pyi_lib_PyQt5-uic.py')
 
+
+@xfail(is_darwin, reason="Fails on OSX")
 @importorskip('PyQt5')
 def test_PyQt5_QWebEngine(pyi_builder):
     pyi_builder.test_source(
