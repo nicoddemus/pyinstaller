@@ -23,7 +23,7 @@ hiddenimports = ["sip",
 datas = (collect_data_files('PyQt5', True, os.path.join('Qt', 'resources')) +
          collect_data_files('PyQt5', True, os.path.join('Qt', 'translations')) +
          [x for x in collect_data_files('PyQt5', False, os.path.join('Qt'))
-          if 'QtWebEngineProcess' in os.path.basename(x[0]) or 'qt.conf' in os.path.basename(x[0])])
+          if 'QtWebEngineProcess' in os.path.basename(x[0]) or os.path.basename(x[0]) == 'qt.conf'])
 
 if compat.is_linux:
     binaries = (
@@ -59,3 +59,4 @@ if qmake:
                            'Helpers', 'QtWebEngineProcess.app', 'Contents', 'Info.plist'),
                      os.path.join('QtWebEngineProcess.app', 'Contents'))
         ]
+
