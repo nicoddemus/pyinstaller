@@ -29,13 +29,13 @@ jobs:
       cache:
         directories:
           - $HOME/Library/Caches/pip
-      script: py.test -k PyQt5 tests/functional/test_libraries.py tests/functional/test_hooks
+      script: py.test -k PyQt5 tests/functional/test_libraries.py
 
     - &test-libraries
       stage: Test - Libraries
       python: 3.5
       # Run tests and speed them up by sending them to multiple CPUs.
-      script: py.test -n 3 --maxfail 3 tests/functional/test_libraries.py tests/functional/test_hooks
+      script: py.test -k PyQt5 tests/functional/test_libraries.py
 
     - <<: *test-libraries
       python: 3.6
