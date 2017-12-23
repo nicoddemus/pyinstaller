@@ -22,8 +22,8 @@ hiddenimports = ["sip",
 # Find the additional files necessary for QtWebEngine.
 datas = (collect_data_files('PyQt5', True, os.path.join('Qt', 'resources')) +
          collect_data_files('PyQt5', True, os.path.join('Qt', 'translations')) +
-         [x for x in collect_data_files('PyQt5', False, os.path.join('Qt', 'bin'))
-          if x[0].endswith('QtWebEngineProcess.exe')])
+         [x for x in collect_data_files('PyQt5', False, os.path.join('Qt'))
+          if x[0].contains('QtWebEngineProcess')])
 
 # Note that for QtWebEngineProcess to be able to find icudtl.dat the bundle_identifier
 # must be set to 'org.qt-project.Qt.QtWebEngineCore'. This can be done by passing
