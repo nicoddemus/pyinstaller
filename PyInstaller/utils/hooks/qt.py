@@ -12,7 +12,7 @@ import sys
 from ..hooks import eval_statement, exec_statement, get_homebrew_path, get_module_file_attribute
 from PyInstaller.depend.bindepend import getImports, getfullnameof
 from ... import log as logging
-from ...compat import exec_command, is_py3, is_win, is_darwin
+from ...compat import exec_command, is_py3, is_win, is_darwin, is_linux
 from ...utils import misc
 
 logger = logging.getLogger(__name__)
@@ -394,10 +394,14 @@ def add_qt5_dependencies(hook_name):
         if is_win:
             imp = getfullnameof(imp)
 
-        # Strip off the extension and ``lib`` prefix (Linux/Mac) to give the raw name. Rename from ``Qt`` to ``Qt5`` (Mac). Lowercase (since Windows always normalized names to lowercase).
+        # Strip off the extension and ``lib`` prefix (Linux/Mac) to give the raw name. Lowercase (since Windows always normalized names to lowercase).
         lib_name = os.path.splitext(os.path.basename(imp))[0].lower()
+        # Linux libraries sometimes have a dotted version number -- ``libfoo.so.3``. It's now ''libfoo.so``, but the ``.so`` must also be removed.
+        if is_linux and os.path.splitext(lib_name)[1] == '.so':
+            lib_name = os.path.splitext(lib_name)[0]
         if lib_name.startswith('lib'):
             lib_name = lib_name[3:]
+        # Rename from ``Qt`` to ``Qt5`` (Mac).
         if is_darwin and lib_name.startswith('Qt'):
             lib_name = 'Qt5' + lib_name[2:]
         logger.debug('{} -> {}'.format(imp, lib_name))
