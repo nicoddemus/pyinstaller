@@ -334,7 +334,8 @@ _qt_dynamic_dependencies_dict = {
     "qt5printsupport":          ("PyQt5.QtPrintSupport",        None,               "printsupport"),
     "qt5qml":                   ("PyQt5.QtQml",                 "qtdeclarative",    ),
     "qmltooling":               (None,                          None,               "qmltooling"),
-    "qt5quick":                 ("PyQt5.QtQuick",               "qtdeclarative",    "scenegraph", "qmltooling"),
+    ##                                                                                                          These added manually for Linux.
+    "qt5quick":                 ("PyQt5.QtQuick",               "qtdeclarative",    "scenegraph", "qmltooling", "xcbglintegrations", "egldeviceintegrations"),
     "qt5quickparticles":        (None,                          None,               ),
     "qt5quickwidgets":          ("PyQt5.QtQuickWidgets",        None,               ),
     "qt5script":                (None,                          "qtscript",         ),
