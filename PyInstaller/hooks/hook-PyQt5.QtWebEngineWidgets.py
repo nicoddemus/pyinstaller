@@ -7,56 +7,44 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
+import json
 import os
-from PyInstaller.utils.hooks import collect_data_files, get_qmake_path, qt_plugins_binaries
+from PyInstaller.utils.hooks import add_qt5_dependencies, exec_statement, remove_prefix
 import PyInstaller.compat as compat
 
-hiddenimports = ["sip",
-                 "PyQt5.QtCore",
-                 "PyQt5.QtGui",
-                 "PyQt5.QtNetwork",
-                 "PyQt5.QtWebChannel",
-                 "PyQt5.QtWebEngineCore",
-                 ]
+hiddenimports, binaries, datas = add_qt5_dependencies(__file__)
 
-# Find the additional files necessary for QtWebEngine.
-datas = (collect_data_files('PyQt5', True, os.path.join('Qt', 'resources')) +
-         collect_data_files('PyQt5', True, os.path.join('Qt', 'translations')) +
-         [x for x in collect_data_files('PyQt5', False, os.path.join('Qt'))
-          if 'QtWebEngineProcess' in os.path.basename(x[0]) or os.path.basename(x[0]) == 'qt.conf'])
+# Query Qt for paths needed. See http://doc.qt.io/qt-5/qlibraryinfo.html.
+q_library_info = json.loads(exec_statement("""
+    import json
+    from PyQt5.QtCore import QLibraryInfo
+    path = QLibraryInfo.location(QLibraryInfo.LibraryExecutablesPath)
+    print(str(json.dumps({
+      'LibraryExecutablesPath' : QLibraryInfo.location(QLibraryInfo.LibraryExecutablesPath),
+      'TranslationsPath' : QLibraryInfo.location(QLibraryInfo.TranslationsPath),
+      'PrefixPath' : QLibraryInfo.location(QLibraryInfo.PrefixPath),
+      'DataPath' : QLibraryInfo.location(QLibraryInfo.DataPath),
+    })))
+"""))
 
+# Include the webengine process.
+datas += [
+    (os.path.join(q_library_info['LibraryExecutablesPath'], 'QtWebEngineProcess*'), os.path.join('PyQt5', 'Qt', remove_prefix(q_library_info['LibraryExecutablesPath'], q_library_info['PrefixPath'] + '/')))
+]
+
+# Include translations and resources.
+if compat.is_darwin:
+    # This is based on the layout of the Mac wheel from PyPi.
+    datas.append((os.path.join(q_library_info['DataPath'], 'lib', 'QtWebEngineCore.framework', 'Resources'), 'PyQt5', 'Qt', 'lib', 'QtWebEngineCore.framework', 'Resources'))
+else:
+    datas += [
+        # Gather translations needed by Chromium.
+        (os.path.join(q_library_info['TranslationsPath'], 'qtwebengine_locales'), os.path.join('PyQt5', 'Qt', 'translations', 'qtwebengine_locales')),
+        # Per the `docs <https://doc.qt.io/qt-5.10/qtwebengine-deploying.html#deploying-resources>`_, ``DataPath`` is the base directory for ``resources``.
+        ((os.path.join(q_library_info['DataPath'], 'resources'), os.path.join('PyQt5', 'Qt', 'resources')))
+    ]
+
+# Add Linux-specific libraries.
 if compat.is_linux:
-    binaries = (
-        # Include required QT plugins for QtWebEngine.
-        qt_plugins_binaries('xcbglintegrations', namespace='PyQt5') +
-        # The automatic library detection fails for `NSS <https://packages.ubuntu.com/search?keywords=libnss3>`_, which is used by QtWebEngine. Pull in the missing files.
-        # TODO: how to locate this? The ``locate`` command finds non-system locations (``/usr/lib/firefix/libnss3.so``, for example) in addition to the path below.
-        [('/usr/lib/x86_64-linux-gnu/nss/*.so', '.')]
-    )
-
-# Note that for QtWebEngineProcess to be able to find icudtl.dat the bundle_identifier
-# must be set to 'org.qt-project.Qt.QtWebEngineCore'. This can be done by passing
-# bundle_identifier='org.qt-project.Qt.QtWebEngineCore' to the BUNDLE command in
-# the .spec file. FIXME: This is not ideal and a better solution is required.
-qmake = get_qmake_path('5')
-if qmake:
-    libdir = compat.exec_command(qmake, "-query", "QT_INSTALL_LIBS").strip()
-
-    if compat.is_darwin:
-        binaries = [
-            (os.path.join(libdir, 'QtWebEngineCore.framework', 'Versions', '5',\
-                          'Helpers', 'QtWebEngineProcess.app', 'Contents', 'MacOS', 'QtWebEngineProcess'),
-             os.path.join('QtWebEngineProcess.app', 'Contents', 'MacOS'))
-        ]
-
-        resources_dir = os.path.join(libdir, 'QtWebEngineCore.framework', 'Versions', '5', 'Resources')
-        datas += [
-            (os.path.join(resources_dir, 'icudtl.dat'),''),
-            (os.path.join(resources_dir, 'qtwebengine_resources.pak'), ''),
-            # The distributed Info.plist has LSUIElement set to true, which prevents the
-            # icon from appearing in the dock.
-            (os.path.join(libdir, 'QtWebEngineCore.framework', 'Versions', '5',\
-                           'Helpers', 'QtWebEngineProcess.app', 'Contents', 'Info.plist'),
-                     os.path.join('QtWebEngineProcess.app', 'Contents'))
-        ]
-
+    # The automatic library detection fails for `NSS <https://packages.ubuntu.com/search?keywords=libnss3>`_, which is used by QtWebEngine. TODO: pull in the missing files without hard-coding the path for a specific Linux distro.
+    binaries.append(('/usr/lib/x86_64-linux-gnu/nss/*.so', '.'))
