@@ -8,10 +8,8 @@
 #-----------------------------------------------------------------------------
 import os
 
-from PyInstaller.utils.hooks import collect_data_files, add_qt5_dependencies
-
-hiddenimports, binaries, datas = add_qt5_dependencies(__file__)
+from PyInstaller.utils.hooks import collect_data_files
 
 # Collect just the ``qt.conf`` file.
-datas += [x for x in collect_data_files('PyQt5', False, os.path.join('Qt')) if
+datas = [x for x in collect_data_files('PyQt5', False, os.path.join('Qt')) if
          os.path.basename(x[0]) == 'qt.conf']
