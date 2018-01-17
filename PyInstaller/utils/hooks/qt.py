@@ -384,7 +384,7 @@ def add_qt5_dependencies(hook_name):
 
     # Look up the module returned by this import.
     module = get_module_file_attribute(hook_name)
-    logger.debug('Examining {}, based on hook of {}.'.format(module, hook_name))
+    logger.debug('add_qt5_dependencies: Examining {}, based on hook of {}.'.format(module, hook_name))
 
     # Walk through all its imports.
     imports = set(getImports(module))
@@ -405,15 +405,18 @@ def add_qt5_dependencies(hook_name):
         # Rename from ``Qt`` to ``Qt5`` (Mac).
         if is_darwin and lib_name.startswith('Qt'):
             lib_name = 'Qt5' + lib_name[2:]
-        logger.debug('{} -> {}'.format(imp, lib_name))
+        logger.debug('add_qt5_dependencies: raw lib {} -> parsed lib {}'.format(imp, lib_name))
 
         # Follow only Qt dependencies.
         if lib_name in _qt_dynamic_dependencies_dict:
             # Follow these to find additional dependencies.
-            logger.debug('Import of {}.'.format(imp))
+            logger.debug('add_qt5_dependencies: Import of {}.'.format(imp))
             imports.update(getImports(imp))
-            # Look up which plugins and translations are needed.
-            lib_name_hiddenimports, lib_name_translations_base, *lib_name_plugins = _qt_dynamic_dependencies_dict[lib_name]
+            # Look up which plugins and translations are needed. Avoid Python 3-only syntax, since the Python 2.7 parser will raise an exception. Original statment was:
+            ## lib_name_hiddenimports, lib_name_translations_base, *lib_name_plugins = _qt_dynamic_dependencies_dict[lib_name]
+            dd = _qt_dynamic_dependencies_dict[lib_name]
+            lib_name_hiddenimports, lib_name_translations_base = dd[:2]
+            lib_name_plugins = dd[2:]
             # Add them in.
             if lib_name_hiddenimports:
                 hiddenimports.update([lib_name_hiddenimports])
@@ -436,7 +439,7 @@ def add_qt5_dependencies(hook_name):
     # Change hiddenimports to a list.
     hiddenimports = list(hiddenimports)
 
-    logger.debug(('Qt5 imports from {}:\n'
+    logger.debug(('add_qt5_dependencies: imports from {}:\n'
                   '  hiddenimports = {}\n'
                   '  binaries = {}\n'
                   '  datas = {}').format(hook_name, hiddenimports, binaries, datas))
