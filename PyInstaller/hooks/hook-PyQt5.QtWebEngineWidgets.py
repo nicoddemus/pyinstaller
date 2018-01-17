@@ -9,7 +9,8 @@
 
 import json
 import os
-from PyInstaller.utils.hooks import add_qt5_dependencies, exec_statement, remove_prefix
+from PyInstaller.utils.hooks import add_qt5_dependencies, exec_statement, remove_prefix, get_module_file_attribute
+from PyInstaller.depend.bindepend import getImports
 import PyInstaller.compat as compat
 
 hiddenimports, binaries, datas = add_qt5_dependencies(__file__)
@@ -46,5 +47,10 @@ else:
 
 # Add Linux-specific libraries.
 if compat.is_linux:
-    # The automatic library detection fails for `NSS <https://packages.ubuntu.com/search?keywords=libnss3>`_, which is used by QtWebEngine. TODO: pull in the missing files without hard-coding the path for a specific Linux distro.
-    binaries.append(('/usr/lib/x86_64-linux-gnu/nss/*.so', '.'))
+    # The automatic library detection fails for `NSS <https://packages.ubuntu.com/search?keywords=libnss3>`_, which is used by QtWebEngine.
+    #
+    # First, find the location of NSS.
+    for imp in getImports(get_module_file_attribute('PyQt5.QtWebEngineWidgets')):
+        if 'libnss3.so' in os.path.basename(imp):
+            # Given a ``/path/to/libnss.so``, add ``/path/to/nss/*.so`` to get the missing NSS libraries.
+            binaries.append((os.path.join(os.path.dirname(imp), 'nss', '*.so'), 'nss'))
