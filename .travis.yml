@@ -36,7 +36,7 @@ jobs:
         - python -m pip install -U pip setuptools wheel | cat
 
         # Install dependencies for PyInstaller tests.
-        - pip install -U -r tests/requirements-tools.txt | cat
+        - pip install -U -r tests/requirements-tools.txt -r tests/requirements-libraries.txt | cat
 
         # Install PyInstaller.
         - pip install -e . | cat
