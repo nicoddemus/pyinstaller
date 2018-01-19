@@ -267,7 +267,7 @@ def qt5_qml_plugins_datas(qmldir, directory):
 #       -   The SVG icon plugin is deployed if the application uses the Qt SVG module.
 #       -   The accessibility plugin is always deployed.
 #
-#   -   Per the `Deploying QML Applications <http://doc.qt.io/qt-5/qtquick-deployment.html>`_ page, QML-based applications need the ``qml/`` directory available.
+#   -   Per the `Deploying QML Applications <http://doc.qt.io/qt-5/qtquick-deployment.html>`_ page, QML-based applications need the ``qml/`` directory available. This is handled by ``hook-PyQt5.QtQuick.py``.
 #   -   Per the `Deploying Qt WebEngine Applications <https://doc.qt.io/qt-5.10/qtwebengine-deploying.html>`_ page, deployment may include:
 #
 #       -   Libraries (handled when PyInstaller following dependencies).
@@ -276,6 +276,8 @@ def qt5_qml_plugins_datas(qmldir, directory):
 #       -   Resources: the files listed in deployWebEngineCore_.
 #       -   Translations: on macOS: ``.app/Content/Resources``; on Linux and Windows: ``qtwebengine_locales`` directory in the directory specified by ``QLibraryInfo::location(QLibraryInfo::TranslationsPath)``.
 #       -   Audio and video codecs: Probably covered if Qt5Multimedia is referenced?
+#
+#       This is handled by ``hook-PyQt5.QtWebEngineWidgets.py``.
 #
 #   -   Since `QAxContainer <http://doc.qt.io/qt-5/activeqt-index.html>`_ is a statically-linked library, it doesn't need any special handling.
 #
