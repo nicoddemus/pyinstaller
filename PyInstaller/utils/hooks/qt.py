@@ -194,8 +194,9 @@ def qt5_qml_dir(namespace):
     else:
         qmldir = exec_command(qmake, "-query", "QT_INSTALL_QML").strip()
     if len(qmldir) == 0:
-        logger.error('Cannot find QT_INSTALL_QML directory, "qmake -query ' +
-                     'QT_INSTALL_QML" returned nothing')
+        logger.warning('Cannot find QT_INSTALL_QML directory, "qmake -query ' +
+                       'QT_INSTALL_QML" returned nothing')
+        return None
     elif not os.path.exists(qmldir):
         logger.error("Directory QT_INSTALL_QML: %s doesn't exist" % qmldir)
 

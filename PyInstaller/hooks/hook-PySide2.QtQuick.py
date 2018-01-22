@@ -34,15 +34,17 @@ dirs = ['Qt',
 
 qmldir = qt5_qml_dir('PySide2')
 
-# Add base qml directories
-datas = [qt5_qml_data(qmldir, dir) for dir in dirs]
+if qmldir:
 
-# Add qmldir and *.qmltypes files
-for dir in dirs:
-    datas.extend(qt5_qml_plugins_datas(qmldir, dir))
+    # Add base qml directories
+    datas = [qt5_qml_data(qmldir, dir) for dir in dirs]
 
-# Add binaries
-binaries = []
-for dir in dirs:
-    binaries.extend(qt5_qml_plugins_binaries(qmldir, dir))
-    import pprint
+    # Add qmldir and *.qmltypes files
+    for dir in dirs:
+        datas.extend(qt5_qml_plugins_datas(qmldir, dir))
+
+    # Add binaries
+    binaries = []
+    for dir in dirs:
+        binaries.extend(qt5_qml_plugins_binaries(qmldir, dir))
+        import pprint
