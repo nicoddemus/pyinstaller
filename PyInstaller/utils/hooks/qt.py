@@ -437,7 +437,10 @@ def add_qt5_dependencies(hook_name):
         path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
         print(str(path))
     """)
-    datas = [(os.path.join(translations_path, tb + '_*.qm'), os.path.join('PyQt5', 'Qt', 'translations')) for tb in translations_base]
+    if os.path.isdir(translations_path):
+        datas = [(os.path.join(translations_path, tb + '_*.qm'), os.path.join('PyQt5', 'Qt', 'translations')) for tb in translations_base]
+    else:
+        datas = []
     # Change hiddenimports to a list.
     hiddenimports = list(hiddenimports)
 
